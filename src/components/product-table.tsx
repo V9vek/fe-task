@@ -9,15 +9,20 @@ import { DataTableColumnHeader } from "./table/data-table-column-header";
 import { useProducts } from "@/hooks/product";
 import type { Product, ProductsListResponse } from "@/types/product";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { DataTableRowActions } from "./table/data-table-row-actions";
 import { useDeleteProduct } from "@/hooks/product";
 import { toast } from "react-toastify";
 import ProductForm from "@/components/product-form";
+import { useDebounce } from "@/lib/use-debounce";
 
 export default function ProductTable() {
   const router = useRouter();
   const deleteMutation = useDeleteProduct();
   const [editing, setEditing] = React.useState<Product | null>(null);
+  const queryClient = useQueryClient();
+  const [searchInput, setSearchInput] = React.useState("");
+  const search = useDebounce(searchInput, 400);
 
   function handleDelete(id: number) {
     deleteMutation.mutate(id, {
@@ -99,16 +104,27 @@ export default function ProductTable() {
     data: productsResponse,
     isLoading,
     isError,
+    isFetching,
   } = useProducts({
     limit: pagination.pageSize,
     skip: pagination.pageIndex * pagination.pageSize,
+    q: search || undefined,
   });
 
   const products = productsResponse?.products ?? [];
   const total = productsResponse?.total ?? 0;
   const pageCount = Math.ceil(total / pagination.pageSize);
 
-  if (isLoading) {
+  React.useEffect(() => {
+    // reset to first page when search term changes
+    setPagination((p) => ({ ...p, pageIndex: 0 }));
+  }, [search]);
+
+  const displayData = products;
+
+  const firstLoad = isLoading && productsResponse === undefined;
+
+  if (firstLoad) {
     return <div>Loading...</div>;
   }
 
@@ -119,15 +135,23 @@ export default function ProductTable() {
   return (
     <>
       <DataTable
-        data={products}
+        data={displayData}
         columns={columns}
         filters={[]}
         manualPagination
         pageCount={pageCount}
         state={{ pagination }}
         onPaginationChange={setPagination}
+        search={searchInput}
+        onSearch={setSearchInput}
         onRowClick={(row: Product) => router.push(`/products/${row.id}`)}
       />
+
+      {isFetching && !firstLoad && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/60">
+          <span className="animate-pulse text-muted-foreground">Loading...</span>
+        </div>
+      )}
 
       {editing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setEditing(null)}>

@@ -49,6 +49,8 @@ interface DataTableProps<TData, TValue> {
   };
   onPaginationChange?: (updater: PaginationState | ((old: PaginationState) => PaginationState)) => void;
   onRowClick?: (rowData: TData) => void;
+  search?: string;
+  onSearch?: (value: string) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -60,6 +62,8 @@ export function DataTable<TData, TValue>({
   state: externalState,
   onPaginationChange,
   onRowClick,
+  search,
+  onSearch,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
@@ -99,7 +103,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      <DataTableToolbar table={table} filters={filters} />
+      <DataTableToolbar table={table} filters={filters} search={search} onSearchChange={onSearch} />
       <div className="rounded-md border">
         <Table>
           <TableHeader>

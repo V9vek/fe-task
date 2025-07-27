@@ -5,17 +5,33 @@ import type { Product, ProductsListResponse } from "@/types/product";
 interface UseProductsParams {
   limit: number;
   skip: number;
+  q?: string;
 }
 
-export function useProducts({ limit, skip }: UseProductsParams) {
+export function useProducts({ limit, skip, q }: UseProductsParams) {
   return useQuery<ProductsListResponse, Error>({
-    queryKey: ["products", { limit, skip }],
+    queryKey: ["products", { limit, skip, q }],
     queryFn: async () => {
+      if (q) {
+        const qs = new URLSearchParams({
+          q,
+          limit: String(limit),
+          skip: String(skip),
+        });
+        const { data } = await api.get<ProductsListResponse>(
+          `/products/search?${qs.toString()}`,
+        );
+        return data;
+      }
+      const qs = new URLSearchParams({
+        limit: String(limit),
+        skip: String(skip),
+      });
       const { data } = await api.get<ProductsListResponse>(
-        `/products?limit=${limit}&skip=${skip}`,
+        `/products?${qs.toString()}`,
       );
       return data;
-    }
+    },
   });
 }
 
