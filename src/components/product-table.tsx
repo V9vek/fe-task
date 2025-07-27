@@ -12,16 +12,22 @@ import { useRouter } from "next/navigation";
 import { DataTableRowActions } from "./table/data-table-row-actions";
 import { useDeleteProduct } from "@/hooks/product";
 import { toast } from "react-toastify";
+import ProductForm from "@/components/product-form";
 
 export default function ProductTable() {
   const router = useRouter();
   const deleteMutation = useDeleteProduct();
+  const [editing, setEditing] = React.useState<Product | null>(null);
 
   function handleDelete(id: number) {
     deleteMutation.mutate(id, {
       onSuccess: () => toast.success("Product deleted"),
       onError: () => toast.error("Failed to delete product"),
     });
+  }
+
+  function handleEdit(p: Product) {
+    setEditing(p);
   }
 
   const columns: ColumnDef<Product & { label?: string }>[] = React.useMemo(
@@ -51,8 +57,8 @@ export default function ProductTable() {
           <DataTableColumnHeader column={column} title="Price" />
         ),
         cell: ({ row }) => {
-          const price: number = row.getValue("price");
-          return <span>${price.toFixed(2)}</span>;
+          const price = row.getValue<number>("price");
+          return <span>{typeof price === "number" ? `$${price.toFixed(2)}` : "-"}</span>;
         },
       },
       {
@@ -75,6 +81,7 @@ export default function ProductTable() {
             <DataTableRowActions
               row={product as Product & { label?: string }}
               onDelete={() => handleDelete(product.id)}
+              onEdit={() => handleEdit(product)}
             />
           );
         },
@@ -97,8 +104,8 @@ export default function ProductTable() {
     skip: pagination.pageIndex * pagination.pageSize,
   });
 
-  const products = (productsResponse as ProductsListResponse | undefined)?.products ?? [];
-  const total = (productsResponse as ProductsListResponse | undefined)?.total ?? 0;
+  const products = productsResponse?.products ?? [];
+  const total = productsResponse?.total ?? 0;
   const pageCount = Math.ceil(total / pagination.pageSize);
 
   if (isLoading) {
@@ -110,15 +117,25 @@ export default function ProductTable() {
   }
 
   return (
-    <DataTable
-      data={products}
-      columns={columns}
-      filters={[]}
-      manualPagination
-      pageCount={pageCount}
-      state={{ pagination }}
-      onPaginationChange={setPagination}
-      onRowClick={(row: Product) => router.push(`/products/${row.id}`)}
-    />
+    <>
+      <DataTable
+        data={products}
+        columns={columns}
+        filters={[]}
+        manualPagination
+        pageCount={pageCount}
+        state={{ pagination }}
+        onPaginationChange={setPagination}
+        onRowClick={(row: Product) => router.push(`/products/${row.id}`)}
+      />
+
+      {editing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setEditing(null)}>
+          <div className="bg-background rounded-md shadow-lg w-full max-w-xl max-h-[90vh] overflow-auto" onClick={(e)=>e.stopPropagation()}>
+            <ProductForm defaultValues={editing} afterSubmit={() => setEditing(null)} />
+          </div>
+        </div>
+      )}
+    </>
   );
 } 

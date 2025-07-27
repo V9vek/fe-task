@@ -18,7 +18,7 @@ function StarRating({ value }: { value: number }) {
         />
       ))}
       <span className="text-muted-foreground ml-2 text-sm font-medium">
-        {value.toFixed(1)}
+        {value?.toFixed(1)}
       </span>
     </div>
   );
@@ -67,7 +67,7 @@ export default function ProductDetail({ id }: { id: string }) {
                 <button
                   key={src}
                   onClick={() => setActiveImage(src)}
-                  className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-md border transition-all duration-200 ${activeImage === src ? "ring-2 ring-primary ring-offset-2 shadow-lg -translate-y-0.5" : "hover:ring-1 hover:ring-muted-foreground/50"}`}
+                  className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-md border transition-all duration-200 ${activeImage === src ? "ring-primary -translate-y-0.5 shadow-lg ring-2 ring-offset-2" : "hover:ring-muted-foreground/50 hover:ring-1"}`}
                 >
                   <Image
                     src={src}
@@ -121,7 +121,9 @@ export default function ProductDetail({ id }: { id: string }) {
           </div>
 
           <div className="text-primary flex items-baseline gap-2 text-4xl font-bold">
-            ${product.price.toLocaleString()}
+            {typeof product.price === "number"
+              ? `$${product.price.toLocaleString()}`
+              : "-"}
             {product.discountPercentage && (
               <span className="text-lg font-medium text-red-500 line-through opacity-60">
                 $
@@ -173,13 +175,13 @@ export default function ProductDetail({ id }: { id: string }) {
           </div>
 
           {/* Info Cards */}
-          <div>
-            <h3 className="text-muted-foreground mb-1 text-sm font-medium">
-              Shipping Information
-            </h3>
-            {(product.dimensions ??
-              product.shippingInformation ??
-              product.warrantyInformation) && (
+          {(product.dimensions ??
+            product.shippingInformation ??
+            product.warrantyInformation) && (
+            <div>
+              <h3 className="text-muted-foreground mb-1 text-sm font-medium">
+                Shipping Information
+              </h3>
               <div className="mt-4 grid gap-4 text-xs sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 {product.dimensions && (
                   <div className="space-y-1 rounded border p-3 text-center">
@@ -205,8 +207,8 @@ export default function ProductDetail({ id }: { id: string }) {
                   </div>
                 )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {product.colors && product.colors.length > 0 && (
             <div className="space-y-1">

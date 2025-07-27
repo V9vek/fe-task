@@ -15,19 +15,31 @@ export function useProducts({ limit, skip }: UseProductsParams) {
         `/products?limit=${limit}&skip=${skip}`,
       );
       return data;
-    },
-    keepPreviousData: true,
+    }
   });
 }
 
+// helper to normalize id
+function cacheKey(id: number | string) {
+  return String(id);
+}
+
 export function useProduct(id: number | string) {
+  const key = cacheKey(id);
+  const queryClient = useQueryClient();
+  const existing = queryClient.getQueryData<Product>(["product", key]);
+
   return useQuery<Product, Error>({
-    queryKey: ["product", id],
+    queryKey: ["product", key],
     queryFn: async () => {
-      const { data } = await api.get<Product>(`/products/${id}`);
+      const { data } = await api.get<Product>(`/products/${key}`);
       return data;
     },
-    enabled: !!id,
+    // If we already have this product in cache, skip network call
+    enabled: !!id && !existing,
+    initialData: existing,
+    staleTime: existing ? Infinity : 0,
+    retry: false,
   });
 }
 
@@ -38,8 +50,23 @@ export function useAddProduct() {
       const { data } = await api.post<Product>("/products/add", payload);
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
+    onSuccess: (newProd) => {
+      // Add to cached products lists optimistically
+      queryClient.setQueriesData({ queryKey: ["products"], exact: false }, (old) => {
+        if (!old) return old;
+        if (typeof old === "object" && "products" in old) {
+          const list = old as ProductsListResponse;
+          return {
+            ...list,
+            products: [newProd, ...list.products],
+            total: list.total + 1,
+          };
+        }
+        return old;
+      });
+
+      // Cache detail
+      queryClient.setQueryData(["product", cacheKey(newProd.id)], newProd);
     },
   });
 }
@@ -52,8 +79,21 @@ export function useUpdateProduct() {
       return data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-      queryClient.setQueryData(["product", data.id], data);
+      // Update individual product cache
+      queryClient.setQueryData(["product", cacheKey(data.id)], data);
+
+      // Optimistically update any products list caches in memory
+      queryClient.setQueriesData({ queryKey: ["products"], exact: false }, (old) => {
+        if (!old) return old;
+        if (typeof old === "object" && "products" in old) {
+          const list = old as ProductsListResponse;
+          return {
+            ...list,
+            products: list.products.map((p) => (p.id === data.id ? data : p)),
+          };
+        }
+        return old;
+      });
     },
   });
 }
@@ -65,8 +105,23 @@ export function useDeleteProduct() {
       await api.delete(`/products/${id}`);
       return id;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
+    onSuccess: (deletedId) => {
+      // Remove product detail cache
+      queryClient.removeQueries({ queryKey: ["product", cacheKey(deletedId)] });
+
+      // Remove from any cached products list
+      queryClient.setQueriesData({ queryKey: ["products"], exact: false }, (old) => {
+        if (!old) return old;
+        if (typeof old === "object" && "products" in old) {
+          const list = old as ProductsListResponse;
+          return {
+            ...list,
+            products: list.products.filter((p) => p.id !== deletedId),
+            total: list.total - 1,
+          };
+        }
+        return old;
+      });
     },
   });
 } 

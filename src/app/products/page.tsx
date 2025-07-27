@@ -1,19 +1,35 @@
-import ProductTable from "@/components/product-table";
-import type { Metadata } from "next";
-import { Button } from "@/components/ui/button";
+"use client";
 
-export const metadata: Metadata = {
-  title: "All Products – MyShop",
-};
+import ProductTable from "@/components/product-table";
+import { Button } from "@/components/ui/button";
+import ProductForm from "@/components/product-form";
+import { useState } from "react";
 
 export default function ProductsPage() {
+  const [adding, setAdding] = useState(false);
+
   return (
     <main className="p-6">
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Store Management</h1>
-        <Button>+ New Product</Button>
+        <Button onClick={() => setAdding(true)}>+ New Product</Button>
       </div>
+
       <ProductTable />
+
+      {adding && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={() => setAdding(false)}
+        >
+          <div
+            className="max-h-[90vh] w-full max-w-xl overflow-auto rounded-md bg-background shadow-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ProductForm afterSubmit={() => setAdding(false)} />
+          </div>
+        </div>
+      )}
     </main>
   );
 } 
