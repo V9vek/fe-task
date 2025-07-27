@@ -39,6 +39,10 @@ export interface Product {
   dimensions?: Dimensions;
   tags?: string[];
   meta?: Meta;
+  sku?: string;
+  weight?: number;
+  returnPolicy?: string;
+  minimumOrderQuantity?: number;
 }
 
 export interface ProductsListResponse {

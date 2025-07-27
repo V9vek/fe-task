@@ -92,11 +92,20 @@ export function useUpdateProduct() {
   return useMutation({
     mutationFn: async ({ id, payload }: { id: number | string; payload: Partial<Product> }) => {
       const { data } = await api.put<Product>(`/products/${id}`, payload);
-      return data;
+      // Merge the server response with the payload so we keep any custom fields
+      return { ...payload, ...data } as Product;
     },
-    onSuccess: (data) => {
+    onSuccess: async (updated, variables) => {
       // Update individual product cache
-      queryClient.setQueryData(["product", cacheKey(data.id)], data);
+      let merged = queryClient.getQueryData<Product>(["product", cacheKey(variables.id)]);
+      if (!merged) {
+        // fetch full product if not in cache to retain all other fields
+        const { data: full } = await api.get<Product>(`/products/${variables.id}`);
+        merged = { ...full, ...updated };
+      } else {
+        merged = { ...merged, ...updated };
+      }
+      queryClient.setQueryData(["product", cacheKey(variables.id)], merged);
 
       // Optimistically update any products list caches in memory
       queryClient.setQueriesData({ queryKey: ["products"], exact: false }, (old) => {
@@ -105,7 +114,7 @@ export function useUpdateProduct() {
           const list = old as ProductsListResponse;
           return {
             ...list,
-            products: list.products.map((p) => (p.id === data.id ? data : p)),
+            products: list.products.map((p) => (p.id === variables.id ? { ...p, ...updated } : p)),
           };
         }
         return old;

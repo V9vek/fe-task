@@ -139,11 +139,19 @@ export default function ProductDetail({ id }: { id: string }) {
           <div className="space-y-1">
             <div className="flex flex-wrap gap-2">
               {/* Stock status chip */}
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-medium ${product.stock > 0 ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}
-              >
-                {product.stock > 0 ? "In Stock" : "Out of Stock"}
-              </span>
+              {(() => {
+                const status = (product.availabilityStatus ?? "").toLowerCase();
+                const colorClass = status.includes("out")
+                  ? "bg-red-100 text-red-700"
+                  : status.includes("low")
+                  ? "bg-amber-100 text-amber-700"
+                  : "bg-emerald-100 text-emerald-700"; // default to in-stock green
+                return (
+                  <span className={`rounded-full px-3 py-1 text-xs font-medium ${colorClass}`}> 
+                    {product.availabilityStatus}
+                  </span>
+                );
+              })()}
 
               {product.stock > 0 && (
                 <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">

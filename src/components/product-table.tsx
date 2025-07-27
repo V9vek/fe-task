@@ -7,7 +7,7 @@ import Image from "next/image";
 import { DataTable } from "./table/data-table";
 import { DataTableColumnHeader } from "./table/data-table-column-header";
 import { useProducts } from "@/hooks/product";
-import type { Product, ProductsListResponse } from "@/types/product";
+import type { Product} from "@/types/product";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { DataTableRowActions } from "./table/data-table-row-actions";

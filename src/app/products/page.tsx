@@ -6,6 +6,7 @@ import ProductForm from "@/components/product-form";
 import { useState } from "react";
 
 export default function ProductsPage() {
+  console.log("rendered")
   const [adding, setAdding] = useState(false);
 
   return (
