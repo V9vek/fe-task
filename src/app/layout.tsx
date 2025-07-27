@@ -1,5 +1,4 @@
 import QueryProvider from "@/lib/query-provider";
-import Sidebar from "@/components/sidebar";
 import "@/styles/globals.css";
 
 import "react-toastify/dist/ReactToastify.css";
@@ -35,10 +34,7 @@ export default function RootLayout({
           <QueryProvider>
             <ToastContainer />
             <div className="h-screen flex max-h-screen overflow-hidden">
-              <Sidebar />
-              <div className="flex-1 overflow-auto">
-                {children}
-              </div>
+              <div className="flex-1 overflow-auto">{children}</div>
             </div>
           </QueryProvider>
         </ThemeProvider>

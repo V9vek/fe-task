@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Sidebar from "@/components/sidebar";
 import ProductDetail from "@/components/product-detail";
 import axios from "axios";
 import type { Product } from "@/types/product";
@@ -19,5 +20,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default function ProductPage({ params }: Props) {
-  return <ProductDetail id={params.id} />;
+  return (
+    <div className="flex h-full">
+      <Sidebar />
+      <div className="flex-1 overflow-auto">
+        <ProductDetail id={params.id} />
+      </div>
+    </div>
+  );
 } 
