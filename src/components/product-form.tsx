@@ -218,7 +218,7 @@ export default function ProductForm({ defaultValues, afterSubmit }: Props) {
           <Label>Rating</Label>
           <Input
             type="number"
-            step="0.1"
+            step="0.01"
             min="0"
             max="5"
             {...register("rating", { valueAsNumber: true })}

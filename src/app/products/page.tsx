@@ -24,7 +24,7 @@ export default function ProductsPage() {
           onClick={() => setAdding(false)}
         >
           <div
-            className="max-h-[90vh] w-full max-w-xl overflow-auto rounded-md bg-background shadow-lg"
+            className="max-h-[90vh] w-full max-w-2xl overflow-auto rounded-md bg-background shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <ProductForm afterSubmit={() => setAdding(false)} />

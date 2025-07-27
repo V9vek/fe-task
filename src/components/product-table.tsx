@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import * as React from "react";
 import { type ColumnDef, type PaginationState } from "@tanstack/react-table";
@@ -7,10 +7,10 @@ import Image from "next/image";
 import { DataTable } from "./table/data-table";
 import { DataTableColumnHeader } from "./table/data-table-column-header";
 import { useProducts } from "@/hooks/product";
-import type { Product} from "@/types/product";
+import type { Product } from "@/types/product";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { DataTableRowActions } from "./table/data-table-row-actions";
+import { SquarePen, Star, Trash2 } from "lucide-react";
 import { useDeleteProduct } from "@/hooks/product";
 import { toast } from "react-toastify";
 import ProductForm from "@/components/product-form";
@@ -46,7 +46,7 @@ export default function ProductTable() {
             alt={row.original.title}
             width={40}
             height={40}
-            className="object-cover rounded"
+            className="rounded object-cover"
           />
         ),
       },
@@ -63,7 +63,11 @@ export default function ProductTable() {
         ),
         cell: ({ row }) => {
           const price = row.getValue<number>("price");
-          return <span>{typeof price === "number" ? `$${price.toFixed(2)}` : "-"}</span>;
+          return (
+            <span>
+              {typeof price === "number" ? `$${price.toFixed(2)}` : "-"}
+            </span>
+          );
         },
       },
       {
@@ -71,6 +75,28 @@ export default function ProductTable() {
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="Rating" />
         ),
+        cell: ({ row }) => {
+          const rating = row.getValue<number>("rating") ?? 0;
+          const full = Math.round(rating);
+          return (
+            <div className="flex items-center gap-1">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  className={
+                    i < full
+                      ? "fill-current text-amber-400"
+                      : "stroke-current text-amber-400"
+                  }
+                  size={14}
+                />
+              ))}
+              <span className="text-muted-foreground ml-1 text-xs">
+                {rating.toFixed(1)}
+              </span>
+            </div>
+          );
+        },
       },
       {
         accessorKey: "stock",
@@ -79,15 +105,54 @@ export default function ProductTable() {
         ),
       },
       {
+        accessorKey: "availabilityStatus",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Status" />
+        ),
+        cell: ({ row }) => {
+          const statusRaw = row.original.availabilityStatus ?? "";
+          const status = statusRaw.toLowerCase();
+          const colorClass = status.includes("out")
+            ? "bg-red-100 text-red-700"
+            : status.includes("low") || status.includes("limit")
+              ? "bg-amber-100 text-amber-700"
+              : "bg-emerald-100 text-emerald-700";
+          return (
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-medium ${colorClass}`}
+            >
+              {statusRaw}
+            </span>
+          );
+        },
+      },
+      {
         id: "actions",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Action" />
+        ),
         cell: ({ row }) => {
           const product = row.original as Product;
           return (
-            <DataTableRowActions
-              row={product as Product & { label?: string }}
-              onDelete={() => handleDelete(product.id)}
-              onEdit={() => handleEdit(product)}
-            />
+            <div
+              className="flex items-center gap-2"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={() => handleEdit(product)}
+                className="text-muted-foreground hover:text-primary transition-colors hover:cursor-pointer"
+              >
+                <SquarePen size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDelete(product.id)}
+                className="text-muted-foreground transition-colors hover:cursor-pointer hover:text-red-600"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
           );
         },
       },
@@ -148,18 +213,29 @@ export default function ProductTable() {
       />
 
       {isFetching && !firstLoad && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/60">
-          <span className="animate-pulse text-muted-foreground">Loading...</span>
+        <div className="bg-background/60 absolute inset-0 flex items-center justify-center">
+          <span className="text-muted-foreground animate-pulse">
+            Loading...
+          </span>
         </div>
       )}
 
       {editing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setEditing(null)}>
-          <div className="bg-background rounded-md shadow-lg w-full max-w-xl max-h-[90vh] overflow-auto" onClick={(e)=>e.stopPropagation()}>
-            <ProductForm defaultValues={editing} afterSubmit={() => setEditing(null)} />
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={() => setEditing(null)}
+        >
+          <div
+            className="bg-background max-h-[90vh] w-full max-w-2xl overflow-auto rounded-md shadow-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ProductForm
+              defaultValues={editing}
+              afterSubmit={() => setEditing(null)}
+            />
           </div>
         </div>
       )}
     </>
   );
-} 
+}
