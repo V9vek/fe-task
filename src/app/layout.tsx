@@ -10,8 +10,8 @@ import { ToastContainer } from "react-toastify";
 import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
-  title: "FE task QuarbonaAI",
-  description: "fe task for QuarbonaAI",
+  title: "Quarbona",
+  description: "Quarbona",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 

@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import { useProduct } from "@/hooks/product";
-import { Star } from "lucide-react";
+import { ArrowLeft, Star } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 function StarRating({ value }: { value: number }) {
@@ -35,7 +35,26 @@ export default function ProductDetail({ id }: { id: string }) {
     }
   }, [product]);
 
-  if (isLoading) return <div className="p-6">Loading...</div>;
+  if (isLoading) {
+    return (
+      <section className="space-y-4 px-8 py-6 animate-pulse">
+        <div className="h-8 w-32 rounded-md bg-muted" />
+        <div className="mx-auto grid max-w-7xl items-start gap-8 xl:grid-cols-[420px_1fr]">
+          <div className="aspect-square w-full rounded-md bg-muted" />
+          <div className="space-y-4">
+            <div className="h-8 w-3/4 rounded-md bg-muted" />
+            <div className="h-6 w-1/3 rounded-md bg-muted" />
+            <div className="h-10 w-1/2 rounded-md bg-muted" />
+            <div className="space-y-2">
+              {Array.from({ length: 4 }).map((_, idx) => (
+                <div key={idx} className="h-6 w-full rounded-md bg-muted" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
   if (isError || !product)
     return <div className="p-6">Failed to load product</div>;
 
@@ -46,9 +65,11 @@ export default function ProductDetail({ id }: { id: string }) {
       <button
         type="button"
         onClick={() => router.back()}
-        className="text-muted-foreground w-max cursor-pointer text-sm hover:underline"
+        className="text-muted-foreground w-max cursor-pointer text-sm border px-2 py-1 rounded-md"
       >
-        ← Back
+        <div className="flex items-center gap-2">
+          <ArrowLeft className="h-3 w-4" /> Back
+        </div>
       </button>
       <div className="mx-auto grid max-w-7xl items-start gap-8 xl:grid-cols-[420px_1fr]">
         {/* Image gallery */}
@@ -144,10 +165,12 @@ export default function ProductDetail({ id }: { id: string }) {
                 const colorClass = status.includes("out")
                   ? "bg-red-100 text-red-700"
                   : status.includes("low")
-                  ? "bg-amber-100 text-amber-700"
-                  : "bg-emerald-100 text-emerald-700"; // default to in-stock green
+                    ? "bg-amber-100 text-amber-700"
+                    : "bg-emerald-100 text-emerald-700"; // default to in-stock green
                 return (
-                  <span className={`rounded-full px-3 py-1 text-xs font-medium ${colorClass}`}> 
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-medium ${colorClass}`}
+                  >
                     {product.availabilityStatus}
                   </span>
                 );

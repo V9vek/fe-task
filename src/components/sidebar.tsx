@@ -47,7 +47,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   return (
     <aside className="hidden md:block w-56 bg-background border-r h-full py-6 px-4 overflow-y-auto">
-      <div className="text-xl font-bold mb-8">E-Com</div>
+      <div className="text-xl font-bold mb-8">Quarbona</div>
       <nav className="space-y-2">
         {navItems.map((item) => {
           const Icon = item.icon;

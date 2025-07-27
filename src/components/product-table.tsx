@@ -190,7 +190,40 @@ export default function ProductTable() {
   const firstLoad = isLoading && productsResponse === undefined;
 
   if (firstLoad) {
-    return <div>Loading...</div>;
+    return (
+      <div className="p-6 animate-pulse space-y-3">
+        {/* table header skeleton */}
+        <div className="grid grid-cols-[40px_1fr_80px_100px_60px_100px_60px] gap-4 px-4 py-2">
+          <div className="h-4 w-10 bg-muted rounded" />
+          <div className="h-4 w-1/3 bg-muted rounded" />
+          <div className="h-4 w-12 bg-muted rounded" />
+          <div className="h-4 w-16 bg-muted rounded" />
+          <div className="h-4 w-10 bg-muted rounded" />
+          <div className="h-4 w-20 bg-muted rounded" />
+          <div className="h-4 w-8 bg-muted rounded" />
+        </div>
+
+        <div className="border rounded-md divide-y divide-muted/50">
+          {Array.from({ length: pagination.pageSize }).map((_, idx) => (
+            <div
+              key={idx}
+              className="grid grid-cols-[40px_1fr_80px_100px_60px_100px_60px] items-center gap-4 px-4 py-3"
+            >
+              <div className="h-10 w-10 bg-muted rounded" />
+              <div className="h-4 w-full bg-muted rounded" />
+              <div className="h-4 w-12 bg-muted rounded" />
+              <div className="h-4 w-16 bg-muted rounded" />
+              <div className="h-4 w-10 bg-muted rounded" />
+              <div className="h-6 w-20 bg-muted rounded-full" />
+              <div className="flex gap-2">
+                <div className="h-4 w-4 bg-muted rounded" />
+                <div className="h-4 w-4 bg-muted rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   if (isError) {
@@ -214,9 +247,7 @@ export default function ProductTable() {
 
       {isFetching && !firstLoad && (
         <div className="bg-background/60 absolute inset-0 flex items-center justify-center">
-          <span className="text-muted-foreground animate-pulse">
-            Loading...
-          </span>
+          <div className="animate-pulse h-8 w-1/2 rounded-md bg-muted" />
         </div>
       )}
 
